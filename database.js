@@ -1,16 +1,17 @@
 const { Pool } = require('pg');
+const { DEVELOPMENT } = require('./utils/constants/global');
 
-const env = process.env.NODE_ENV || 'development';
+const env = process.env.NODE_ENV || DEVELOPMENT;
 
 let connectionString;
 
-if (env === 'development') {
+if (env === DEVELOPMENT) {
   connectionString = {
-    user: process.env.LOCAL_DATABASE_USER,
-    host: process.env.LOCAL_DATABASE_HOST,
     database: process.env.LOCAL_DATABASE_NAME,
+    host: process.env.LOCAL_DATABASE_HOST,
     password: process.env.LOCAL_DATABASE_PASSWORD,
     port: process.env.LOCAL_DATABASE_PORT,
+    user: process.env.LOCAL_DATABASE_USER,
   };
 } else {
   connectionString = {
@@ -19,10 +20,7 @@ if (env === 'development') {
   };
 }
 
-console.log(connectionString);
-
 const database = new Pool(connectionString);
-database.on('connect', () => console.log('connected to db'));
 
 module.exports = {
   database,

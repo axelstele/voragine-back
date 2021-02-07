@@ -2,7 +2,9 @@
   "name": "voragine-backoffice-backend",
   "version": "2.0.0",
   "dependencies": {
+    "bcrypt": "^5.0.0",
     "body-parser": "^1.5.1",
+    "cors": "^2.8.5",
     "express": "^4.7.1",
     "method-override": "^2.1.2",
     "pg": "^8.5.1"

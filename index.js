@@ -1,22 +1,25 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 const users = require('./queries/users');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 8000;
 
-app.use(bodyParser.json());
 app.use(
   bodyParser.urlencoded({
     extended: true,
   }),
 );
+app.use(bodyParser.json());
+app.use(cors());
+app.options('*', cors());
 
 app.get('/', (request, response) => {
   response.json({ info: 'Node.js, Express, and Postgres API' });
 });
 
-app.get('/users', users.get);
+app.post('/login', (request, response) => users.login(request, response));
 
 app.listen(port, () => {
   console.log(`App running on port ${port}.`);

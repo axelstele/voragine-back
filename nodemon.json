@@ -4,6 +4,7 @@
     "LOCAL_DATABASE_NAME": "postgres",
     "LOCAL_DATABASE_PASSWORD": "postgres",
     "LOCAL_DATABASE_PORT": "5432",
+    "LOCAL_DATABASE_SCHEMA": "voragine",
     "LOCAL_DATABASE_USER": "postgres"
   }
 }
