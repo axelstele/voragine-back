@@ -3,7 +3,7 @@ const { database } = require('../database');
 
 const login = (request, response) => {
   const { body } = request;
-  database.query(`SELECT * FROM "${process.env.LOCAL_DATABASE_SCHEMA}"."users" as u WHERE email = '${body.email}'`, (error, results) => {
+  database.query(`SELECT * FROM "${process.env.DATABASE_SCHEMA}"."users" as u WHERE email = '${body.email}'`, (error, results) => {
     if (error) {
       throw error;
     }
