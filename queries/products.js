@@ -25,7 +25,8 @@ const create = (request, response) => {
       files,
     } = request;
     database.query(`
-      INSERT INTO "${process.env.DATABASE_SCHEMA}"."products" VALUES ('${title}', '${description}', ${price}, ${category}, ${quantity})`, (error) => {
+      INSERT INTO "${process.env.DATABASE_SCHEMA}"."products" (title, description, price, category_id, quantity)
+      VALUES ('${title}', '${description}', ${price}, ${category}, ${quantity})`, (error) => {
       if (error) {
         throw error;
       }
@@ -36,7 +37,8 @@ const create = (request, response) => {
         const { lastid } = results.rows[0];
         files.map(async (file) => {
           const { url } = await streamUpload(file);
-          database.query(`INSERT INTO "${process.env.DATABASE_SCHEMA}"."images_products" VALUES (${lastid}, '${url}')`, (error3) => {
+          database.query(`INSERT INTO "${process.env.DATABASE_SCHEMA}"."images_products" (product_id, url)
+          VALUES (${lastid}, '${url}')`, (error3) => {
             if (error3) {
               throw error3;
             }
