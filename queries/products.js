@@ -54,6 +54,24 @@ const create = (request, response) => {
   }
 };
 
+const get = (request, response) => {
+  try {
+    database.query(`
+      SELECT p.id, p.title, p.description, p.price, p.quantity, ARRAY_REMOVE(ARRAY_AGG(ip.url), NULL) AS images
+      FROM "${process.env.DATABASE_SCHEMA}"."products" p 
+      LEFT JOIN "${process.env.DATABASE_SCHEMA}"."images_products" ip ON p.id = ip.product_id
+      GROUP BY p.id`, (error, results) => {
+      if (error) {
+        throw error;
+      }
+      return response.status(200).send(results.rows);
+    });
+  } catch (error) {
+    response.status(500).send({ message: 'An error occurred. Try again later.' });
+  }
+};
+
 module.exports = {
   create,
+  get,
 };

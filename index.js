@@ -31,6 +31,7 @@ app.post('/login', (request, response) => users.login(request, response));
 
 // products
 app.post('/products', fileUpload.array('images'), (request, response) => products.create(request, response));
+app.get('/products', (request, response) => products.get(request, response));
 
 app.listen(port, () => {
   console.log(`App running on port ${port}.`);
