@@ -1,5 +1,5 @@
 const { Pool } = require('pg');
-const { DEVELOPMENT } = require('./utils/constants/global');
+const { DEVELOPMENT } = require('../utils/constants/global');
 
 const env = process.env.NODE_ENV || DEVELOPMENT;
 
@@ -20,8 +20,6 @@ if (env === DEVELOPMENT) {
   };
 }
 
-const database = new Pool(connectionString);
+const pool = new Pool(connectionString);
 
-module.exports = {
-  database,
-};
+module.exports = pool;

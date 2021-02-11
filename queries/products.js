@@ -1,6 +1,6 @@
 const cloudinary = require('cloudinary').v2;
 const streamifier = require('streamifier');
-const { database } = require('../database');
+const pool = require('../config/database');
 
 const streamUpload = (file) => new Promise((resolve, reject) => {
   const stream = cloudinary.uploader.upload_stream(
@@ -16,47 +16,50 @@ const streamUpload = (file) => new Promise((resolve, reject) => {
   streamifier.createReadStream(file.buffer).pipe(stream);
 });
 
-const create = (request, response) => {
+const create = async (request, response) => {
+  const client = await pool.connect();
   try {
+    await client.query('BEGIN');
     const {
       body: {
         title, description, price, category, quantity,
       },
       files,
     } = request;
-    database.query(`
+    client.query(`
       INSERT INTO "${process.env.DATABASE_SCHEMA}"."products" (title, description, price, category_id, quantity)
-      VALUES ('${title}', '${description}', ${price}, ${category}, ${quantity})`, (error) => {
+      VALUES ($1, $2, $3, $4, $5)`, [title, description, price, category, quantity], (error) => {
       if (error) {
         throw error;
       }
-      database.query(`SELECT MAX(id) as lastid FROM "${process.env.DATABASE_SCHEMA}"."products"`, (error2, results) => {
+      client.query(`SELECT MAX(id) as lastid FROM "${process.env.DATABASE_SCHEMA}"."products"`, (error2, results) => {
         if (error2) {
           throw error2;
         }
         const { lastid } = results.rows[0];
         files.map(async (file) => {
           const { url } = await streamUpload(file);
-          database.query(`INSERT INTO "${process.env.DATABASE_SCHEMA}"."images_products" (product_id, url)
-          VALUES (${lastid}, '${url}')`, (error3) => {
+          client.query(`INSERT INTO "${process.env.DATABASE_SCHEMA}"."images_products" (product_id, url)
+          VALUES ($1, $2)`, [lastid, url], (error3) => {
             if (error3) {
               throw error3;
             }
           });
         });
-        return response.status(201).send({
-          message: 'Product added.',
-        });
+        return response.sendStatus(201);
       });
     });
+    client.query('COMMIT');
   } catch (error) {
-    response.status(500).send({ message: 'An error occurred. Try again later.' });
+    client.query('ROLLBACK');
+    response.sendStatus(500);
   }
 };
 
-const get = (request, response) => {
+const get = async (request, response) => {
   try {
-    database.query(`
+    const client = await pool.connect();
+    client.query(`
       SELECT p.id, p.title, p.description, p.price, p.quantity, ARRAY_REMOVE(ARRAY_AGG(ip.url), NULL) AS images
       FROM "${process.env.DATABASE_SCHEMA}"."products" p 
       LEFT JOIN "${process.env.DATABASE_SCHEMA}"."images_products" ip ON p.id = ip.product_id
@@ -67,7 +70,7 @@ const get = (request, response) => {
       return response.status(200).send(results.rows);
     });
   } catch (error) {
-    response.status(500).send({ message: 'An error occurred. Try again later.' });
+    response.sendStatus(500);
   }
 };
 
